@@ -3,10 +3,11 @@
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
 from mbientlab.metawear.cbindings import *
-from time import sleep, clock_gettime, CLOCK_MONOTONIC
+from time import sleep, time
 from threading import Event
 import sys, random, csv, os
 
+DELAY = 5	# delay time between stimuli
 s1 = s2 = True
 k = int(sys.argv[2])
 i = 0
@@ -53,7 +54,7 @@ def clear_outputs():
 
 def reaction_time(j):
     libmetawear.mbl_mw_gpio_set_digital_output(device.board, j)
-    start = clock_gettime(CLOCK_MONOTONIC)
+    start = time()
 
     while (s1 and s2):  # wait for input
         libmetawear.mbl_mw_datasignal_read(signal1)
@@ -66,7 +67,7 @@ def reaction_time(j):
     else:
         correct = not (s1)
 
-    stop = clock_gettime(CLOCK_MONOTONIC)
+    reaction_time = time() - start
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, j)
 
     while (not (s1 and s2)):  # debouncing
@@ -75,8 +76,8 @@ def reaction_time(j):
         libmetawear.mbl_mw_datasignal_read(signal2)
         sleep(0.004)
 
-    print("%r reaction to motor %d was %f seconds" % (correct, j, (stop - start)))
-    data.append([j, correct, (stop - start)])
+    print("%r reaction to motor %d was %f seconds" % (correct, j, reaction_time))
+    data.append([j, correct, reaction_time])
 
 
 # set up metatracker
@@ -102,15 +103,23 @@ signal2 = libmetawear.mbl_mw_gpio_get_digital_input_data_signal(device.board, 5)
 libmetawear.mbl_mw_datasignal_subscribe(signal2, None, libmetawear.callback2)
 print("subscribed listener\n")
 
+# give user a countdown
+print("Starting in:")
+for num in [3, 2, 1]:
+    print(str(num) + "...")
+    sleep(1.0)
+print("GO!!\n")
+
 # starting reaction testing
 while len(motorArray):
     # global motorArray
-    sleep(random.randrange(1, 10))  # random delay vibration
+    # sleep(random.randrange(1, 10))  # random delay vibration
     j = random.randrange(0, len(motorArray))  # select random motor
 
     reaction_time(motorArray[j])
 
     motorArray.pop(j)  # delete this option from the array
+    sleep(DELAY) # give delay time between stimuli
 
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
@@ -118,7 +127,7 @@ with open(sys.argv[3], 'w') as reac_file:
     writer.writerow(['motor', 'correct button', 'reaction time (s)'])
     for a in data:
         writer.writerow([a[0], a[1], a[2]])
-os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
+# os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
 
 # shut down
 libmetawear.mbl_mw_datasignal_unsubscribe(signal1)

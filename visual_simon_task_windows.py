@@ -88,9 +88,9 @@ def run_simon_task(delay, num_images, img_files, outfile_name):
             data.append([image_index, got_correct_answer, reaction_time])
             # Display the results of the individual test on the screen
             if image_index < 2:
-                print(f"{got_correct_answer} guess \"Left\" in {reaction_time} seconds.\n")
+                print(str(got_correct_answer) +  "guess \"Left\" in " + str(reaction_time) + " seconds.\n")
             else:
-                print(f"{got_correct_answer} guess \"Right\" in {reaction_time} seconds.\n")
+                print(str(got_correct_answer) +  "guess \"Right\" in " + str(reaction_time) + " seconds.\n")
         cv2.destroyAllWindows()
     # Write results to csv file
     with open(outfile_name, 'w') as reac_file:
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     sleep(2.0)
     print("Starting in:")
     for num in [3, 2, 1]:
-        print(f"{num}...")
+        print(str(num) + "...")
         sleep(1.0)
     print("GO!!\n")
 

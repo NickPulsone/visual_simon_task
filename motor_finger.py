@@ -3,12 +3,13 @@
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
 from mbientlab.metawear.cbindings import *
-from time import time, sleep, clock_gettime, CLOCK_MONOTONIC
+from time import time, sleep
 from threading import Event
 import sys, random, csv, os
-import keyboard
+import msvcrt
 
-DELAY_TIME = 5      # Maximum allowable delay time in seconds
+DELAY = 1		# Delay time between each stimulus
+MAX_DELAY_TIME = 5      # Maximum allowable delay time in seconds
 s1 = s2 = True
 k = int(sys.argv[2])
 i = 0
@@ -36,27 +37,26 @@ def clear_outputs():
 
 def reaction_time(j):
     libmetawear.mbl_mw_gpio_set_digital_output(device.board, j)
+    key = ""
     start = time()
-    while time() - start < DELAY_TIME:
+    while time() - start < MAX_DELAY_TIME:
         reac_time = time() - start
-        if keyboard.ispressed('a'):
-            if j % 2:
-                correct = True
-            else:
-                correct = False
-            break
-        if keyboard.ispressed('l'):
-            if j % 2:
-                correct = False
-            else:
-                correct = True
-            break
+        if msvcrt.kbhit():
+	    key = msvcrt.getch()
+	    break
+    if (time() - start) >= MAX_DELAY_TIME:
+	correct = False
+        print("Failed to respond in the alloted time.\n")
+        data.append([j, correct, -1])
+    else:
+    	if (key == 'l' and (j % 2 == 1)) or (key == 'a' and (j % 2 == 0)):
+    		correct = True
+    	else:
+		correct = False
+    	print("%r reaction to motor %d was %f seconds" % (correct, j, reac_time))
+    	data.append([j, correct, reac_time])
 
-    stop = clock_gettime(CLOCK_MONOTONIC)
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, j)
-
-    print("%r reaction to motor %d was %f seconds" % (correct, j, reac_time))
-    data.append([j, correct, reac_time])
 
 
 # set up metatracker
@@ -74,15 +74,23 @@ libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 3, 1)
 clear_outputs()  # cleans ungraceful shutdown
 print("configured pins")
 
-# starting reaction testing
+# give user a countdown 
+print("Starting in:")
+for num in [3, 2, 1]:
+    print(str(num) + "...")
+    sleep(1.0)
+print("GO!!\n")
+
+# start reaction testing
 while len(motorArray):
     # global motorArray
-    sleep(random.randrange(1, 10))  # random delay vibration
     j = random.randrange(0, len(motorArray))  # select random motor
 
     reaction_time(motorArray[j])
 
     motorArray.pop(j)  # delete this option from the array
+    # sleep based on predetermined "lag" time
+    sleep(DELAY)
 
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
@@ -90,8 +98,8 @@ with open(sys.argv[3], 'w') as reac_file:
     writer.writerow(['motor', 'correct button', 'reaction time (s)'])
     for a in data:
         writer.writerow([a[0], a[1], a[2]])
-os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
+#os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
 
 # shut down
 device.disconnect()
-print("disconnected")
+print("\ndisconnected")
