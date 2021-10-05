@@ -1,5 +1,4 @@
-# usage: sudo python3 reac_deb.py [mac address] [# of samples] [file_name.csv]
-# TODO: Must be tested with device
+# usage: python visual_pedal.py [mac address] [# of samples] [file_name.csv]
 
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
@@ -10,7 +9,7 @@ import screeninfo
 from threading import Event
 import sys, random, csv, os
 
-DELAY_TIME = 5        # Maximum time user allowed before it moves on to the next image
+MAX_DELAY_TIME = 5        # Maximum time user allowed before it moves on to the next image
 
 s1 = s2 = True        # Signals for the pedal inputs
 k = int(sys.argv[2])  # Number of trials (images) user has to respond to
@@ -87,7 +86,7 @@ def run_simon_task(delay, arrow_array, img_files):
         # Track the time, allowing user only the allotted time
         # to make a response
         now = time()
-        while (time() - now) < DELAY_TIME:
+        while (time() - now) < MAX_DELAY_TIME:
             # Display image and wait for a key to be pressed
             cv2.waitKey(1)
             if not s1 or not s2:  # wait for input
