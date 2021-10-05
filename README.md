@@ -14,7 +14,8 @@ Then type "set mtr=FE:F7:6E:7D:D0:5F"
 
 Then type "CD Desktop" followed by "CD visual_simon_task"
 
-Lastly type the python command corresponding to the test you would like to perform. Most of them follow the form "python <your test>.py %mtr% <#of trials> <subject number>_SimonTask.csv"
+Lastly type the python command corresponding to the test you would like to perform. 
+Most of them follow the form "python <test_name>.py %mtr% <#of trials> <subject number>_SimonTask.csv"
   
 Only "visual_finger.py" has a different form: "python visual_finger.py"
   
