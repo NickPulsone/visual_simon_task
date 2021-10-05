@@ -1,4 +1,4 @@
-# usage: sudo python3 reac_deb.py [mac address] [# of samples] [file_name.csv]
+# usage: python motor_finger.py [mac address] [# of samples] [file_name.csv]
 
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
