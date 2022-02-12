@@ -25,6 +25,7 @@ for y in range(k):
     if i == 4:
         i = 0
 
+
 def clear_outputs():
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, 0)
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, 1)
@@ -42,19 +43,26 @@ def reaction_time(j):
     while time() - start < MAX_DELAY_TIME:
         reac_time = time() - start
         if msvcrt.kbhit():
-	    key = msvcrt.getch()
-	    break
+            key = msvcrt.getch()
+            break
+    # Determine the correct answer
+    if j % 2 == 1:
+        correct_answer = "LEFT"
+    else:
+        correct_answer = "RIGHT"
+
+    # Determine if the answer was correct, append to data accordingly
     if (time() - start) >= MAX_DELAY_TIME:
-	correct = False
+        correct = False
         print("Failed to respond in the alloted time.\n")
         data.append([j, correct, -1])
     else:
-    	if (key == 'l' and (j % 2 == 1)) or (key == 'a' and (j % 2 == 0)):
-    		correct = True
-    	else:
-		correct = False
-    	print("%r reaction to motor %d was %f seconds" % (correct, j, reac_time))
-    	data.append([j, correct, reac_time])
+        if (key == 'l' and (j % 2 == 1)) or (key == 'a' and (j % 2 == 0)):
+            correct = True
+        else:
+            correct = False
+        print("%r reaction to motor %d was %f seconds" % (correct, j, reac_time))
+        data.append([j, correct_answer, correct, reac_time])
 
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, j)
 
@@ -74,7 +82,7 @@ libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 3, 1)
 clear_outputs()  # cleans ungraceful shutdown
 print("configured pins")
 
-# give user a countdown 
+# give user a countdown
 print("Starting in:")
 for num in [3, 2, 1]:
     print(str(num) + "...")
@@ -95,7 +103,7 @@ while len(motorArray):
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
     writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['motor', 'correct button', 'reaction time (s)'])
+    writer.writerow(['motor', 'correct answer', 'was correct', 'reaction time (s)'])
     for a in data:
         writer.writerow([a[0], a[1], a[2]])
 #os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
