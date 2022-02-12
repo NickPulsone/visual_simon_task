@@ -21,6 +21,10 @@ img_files = ["simon_images\\ll.jpg",
              "simon_images\\lr.jpg",
              "simon_images\\rl.jpg",
              "simon_images\\rr.jpg"]
+index_explanations = ["Left Side/ Left Pointing",
+                      "Right Side/ Left Pointing",
+                      "Left Side/ Right Pointing",
+                      "Right Side/ Right Pointing"]
 
 
 # Runs a simon test simulation.
@@ -50,10 +54,17 @@ def run_simon_task(delay, num_images, img_files, outfile_name):
 
     # Main loop of simon testing
     data = []  # Holds user results
+    correct_answers = []  # Keeps track of correct answers
     for i in range(TOTAL_STIMULI):
         # Randomly select the image to open
         arrow_index = random.randrange(0, len(arrow_array))
         image_index = arrow_array[arrow_index]
+        # Keep track of correct answer based on RNG
+        if image_index <= 1:
+            correct_answers.append("LEFT")
+        else:
+            correct_answers.append("RIGHT")
+        # Select image based on RNG
         img = cv2.imread(img_files[image_index])
         arrow_array.pop(arrow_index)
 
@@ -85,19 +96,19 @@ def run_simon_task(delay, num_images, img_files, outfile_name):
             else:
                 got_correct_answer = False
             # Record the results
-            data.append([image_index, got_correct_answer, reaction_time])
+            data.append([image_index, correct_answers[-1], got_correct_answer, reaction_time])
             # Display the results of the individual test on the screen
             if image_index < 2:
-                print(str(got_correct_answer) +  "guess \"Left\" in " + str(reaction_time) + " seconds.\n")
+                print(str(got_correct_answer) + " guess \"Left\" in " + str(reaction_time) + " seconds.\n")
             else:
-                print(str(got_correct_answer) +  "guess \"Right\" in " + str(reaction_time) + " seconds.\n")
+                print(str(got_correct_answer) + " guess \"Right\" in " + str(reaction_time) + " seconds.\n")
         cv2.destroyAllWindows()
     # Write results to csv file
     with open(outfile_name, 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Index', 'Correct', 'Time(s)'])
+        writer.writerow(['Index', 'Correct Answer', 'Is Correct', 'Time(s)'])
         for a in data:
-            writer.writerow([a[0], a[1], a[2]])
+            writer.writerow([index_explanations[a[0]], a[1], a[2], a[3]])
 
 
 if __name__ == '__main__':
