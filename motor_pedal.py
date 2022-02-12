@@ -7,7 +7,7 @@ from time import sleep, time
 from threading import Event
 import sys, random, csv, os
 
-DELAY = 5	# delay time between stimuli
+DELAY = 5  # delay time between stimuli
 s1 = s2 = True
 k = int(sys.argv[2])
 i = 0
@@ -62,6 +62,23 @@ def reaction_time(j):
         libmetawear.mbl_mw_datasignal_read(signal2)
         sleep(0.004)  # bad but polling too quick causes stability issues
 
+    # Determine the combination
+    
+    if j == 0:
+        combination = "Left Leg/Left Motor"
+    elif j == 1:
+        combination = "Left Leg/Right Motor"
+    elif j == 2:
+        combination = "Right Leg/Left Motor"
+    else:
+        combination = "Right Leg/Right Motor"
+        
+    # Determine what the correct answer was based on the combination
+    if j % 2 == 1:
+        correct_answer = "LEFT"
+    else:
+        correct_answer = "RIGHT"
+
     if j % 2:  # determine if input was correct
         correct = not (s2)
     else:
@@ -77,7 +94,7 @@ def reaction_time(j):
         sleep(0.004)
 
     print("%r reaction to motor %d was %f seconds" % (correct, j, reaction_time))
-    data.append([j, correct, reaction_time])
+    data.append([j, combination, correct_answer, correct, reaction_time])
 
 
 # set up metatracker
@@ -124,7 +141,7 @@ while len(motorArray):
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
     writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['motor', 'correct button', 'reaction time (s)'])
+    writer.writerow(['motor', 'combination', 'correct answer', 'was correct', 'reaction time (s)'])
     for a in data:
         writer.writerow([a[0], a[1], a[2]])
 # os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
