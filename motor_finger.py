@@ -45,6 +45,17 @@ def reaction_time(j):
         if msvcrt.kbhit():
             key = msvcrt.getch()
             break
+
+    # Determine what the combination was based on j
+    if j == 0:
+        combination = "Left Leg/Left Motor"
+    elif j == 1:
+        combination = "Left Leg/Right Motor"
+    elif j == 2:
+        combination = "Right Leg/Left Motor"
+    else:
+        combination = "Right Leg/Right Motor"
+
     # Determine the correct answer
     if j % 2 == 1:
         correct_answer = "LEFT"
@@ -62,7 +73,7 @@ def reaction_time(j):
         else:
             correct = False
         print("%r reaction to motor %d was %f seconds" % (correct, j, reac_time))
-        data.append([j, correct_answer, correct, reac_time])
+        data.append([j, combination, correct_answer, correct, reac_time])
 
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, j)
 
@@ -103,7 +114,7 @@ while len(motorArray):
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
     writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['motor', 'correct answer', 'was correct', 'reaction time (s)'])
+    writer.writerow(['motor', 'combination', 'correct answer', 'was correct', 'reaction time (s)'])
     for a in data:
         writer.writerow([a[0], a[1], a[2]])
 #os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
