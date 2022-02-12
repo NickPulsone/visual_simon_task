@@ -9,8 +9,8 @@ import screeninfo
 from threading import Event
 import sys, random, csv, os
 
-MAX_DELAY_TIME = 5        # Maximum time user allowed before it moves on to the next image
-
+MAX_DELAY_TIME = 5        # Maximum time in seconds user allowed before it moves on to the next image
+DELAY_TIME = 1            # Time in seconds between a response to a stimulus and a new stimulus  
 s1 = s2 = True        # Signals for the pedal inputs
 k = int(sys.argv[2])  # Number of trials (images) user has to respond to
 i = 0                 # Counter
@@ -20,6 +20,10 @@ img_files = ["simon_images\\ll.jpg",
              "simon_images\\lr.jpg",
              "simon_images\\rl.jpg",
              "simon_images\\rr.jpg"]
+index_explanations = ["Left Side/ Left Pointing",
+                      "Right Side/ Left Pointing",
+                      "Left Side/ Right Pointing",
+                      "Right Side/ Right Pointing"]
 
 # Create array that holds indices that reference a particular file
 arrowArray = []
@@ -60,7 +64,8 @@ def clear_outputs():
 def run_simon_task(delay, arrow_array, img_files):
     # Holds user results to be returned
     data = []
-
+    correct_answers = []  # Keeps track of correct answers
+    
     # Determine which screen to display on
     screen_id = 0
 
@@ -72,6 +77,11 @@ def run_simon_task(delay, arrow_array, img_files):
         # Randomly select the image to open
         arrow_index = random.randrange(0, len(arrowArray))
         image_index = arrow_array[arrow_index]
+        # Keep track of correct answer based on RNG
+        if image_index <= 1:
+            correct_answers.append("LEFT")
+        else:
+            correct_answers.append("RIGHT")
         img = cv2.imread(img_files[image_index])
         arrow_array.pop(arrow_index)
 
@@ -100,7 +110,7 @@ def run_simon_task(delay, arrow_array, img_files):
 
         # Record that the user took too long if that was the case
         if (time() - now) >= delay:
-            data.append([arrow_index, False, -1.0])
+            data.append([arrow_index, correct_answers[-1], False, -1.0])
             print("False response due to delayed input.\n")
         # Record that the user guessed, determine correctness
         else:
@@ -108,7 +118,7 @@ def run_simon_task(delay, arrow_array, img_files):
                 got_correct_answer = True
             else:
                 got_correct_answer = False
-            data.append([image_index, got_correct_answer, reaction_time])
+            data.append([image_index, correct_answers[-1], got_correct_answer, reaction_time])
             if image_index < 2:
                 print(str(got_correct_answer) + " guess \"Left\" in " + str(reaction_time) + " seconds.\n")
             else:
@@ -164,9 +174,9 @@ if __name__ == '__main__':
     # write results to file
     with open(sys.argv[3], 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Index', 'Correct', 'Time(s)'])
+        writer.writerow(['Index', 'Correct Answer', 'Is Correct', 'Time(s)'])
         for a in results:
-            writer.writerow([a[0], a[1], a[2]])
+            writer.writerow([a[0], a[1], a[2], a[3]])
     # os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
 
     # shut down
