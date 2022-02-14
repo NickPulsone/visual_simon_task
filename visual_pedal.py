@@ -10,7 +10,6 @@ from threading import Event
 import sys, random, csv, os
 
 MAX_DELAY_TIME = 5        # Maximum time in seconds user allowed before it moves on to the next image
-DELAY_TIME = 1            # Time in seconds between a response to a stimulus and a new stimulus  
 s1 = s2 = True        # Signals for the pedal inputs
 k = int(sys.argv[2])  # Number of trials (images) user has to respond to
 i = 0                 # Counter
@@ -61,7 +60,7 @@ def clear_outputs():
 
 # Runs the visual simon test with a given delay in seconds, array of indices
 # of img_files, corresponding to trials and an array of image files/locations (img_files)
-def run_simon_task(delay, arrow_array, img_files):
+def run_simon_task(arrow_array, img_files):
     # Holds user results to be returned
     data = []
     correct_answers = []  # Keeps track of correct answers
@@ -109,7 +108,7 @@ def run_simon_task(delay, arrow_array, img_files):
             sleep(0.004)
 
         # Record that the user took too long if that was the case
-        if (time() - now) >= delay:
+        if (time() - now) >= MAX_DELAY_TIME:
             data.append([arrow_index, correct_answers[-1], False, -1.0])
             print("False response due to delayed input.\n")
         # Record that the user guessed, determine correctness
