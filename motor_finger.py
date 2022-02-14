@@ -8,7 +8,6 @@ from threading import Event
 import sys, random, csv, os
 import msvcrt
 
-DELAY = 1		# Delay time between each stimulus
 MAX_DELAY_TIME = 5      # Maximum allowable delay time in seconds
 s1 = s2 = True
 k = int(sys.argv[2])
