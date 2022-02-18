@@ -9,10 +9,11 @@ import screeninfo
 from threading import Event
 import sys, random, csv, os
 
-MAX_DELAY_TIME = 5        # Maximum time in seconds user allowed before it moves on to the next image
-s1 = s2 = True        # Signals for the pedal inputs
+MAX_DELAY_TIME = 5  # Maximum time in seconds user allowed before it moves on to the next image
+LAG_DELAY_TIME = 2  # Time between stimuli
+s1 = s2 = True  # Signals for the pedal inputs
 k = int(sys.argv[2])  # Number of trials (images) user has to respond to
-i = 0                 # Counter
+i = 0  # Counter
 
 # Filepaths of images used for visual simon test
 img_files = ["simon_images\\ll.jpg",
@@ -27,7 +28,7 @@ index_explanations = ["Left Side/ Left Pointing",
 # Create array that holds indices that reference a particular file
 arrowArray = []
 stimuliIndices = [0, 1, 2, 3]
-for _ in range(int(k/4)):
+for _ in range(int(k / 4)):
     arrowArray = arrowArray + stimuliIndices
 for i in range(k % 4):
     arrowArray.append(i)
@@ -39,12 +40,16 @@ for i in range(k % 4):
 def data_handler1(context, data):
     global s1
     s1 = bool(parse_value(data))
+
+
 libmetawear.callback1 = FnVoid_VoidP_DataP(data_handler1)
 
 
 def data_handler2(context, data):
     global s2
     s2 = bool(parse_value(data))
+
+
 libmetawear.callback2 = FnVoid_VoidP_DataP(data_handler2)
 
 
@@ -64,7 +69,7 @@ def run_simon_task(arrow_array, img_files):
     # Holds user results to be returned
     data = []
     correct_answers = []  # Keeps track of correct answers
-    
+
     # Determine which screen to display on
     screen_id = 0
 
@@ -131,6 +136,8 @@ def run_simon_task(arrow_array, img_files):
             libmetawear.mbl_mw_datasignal_read(signal2)
             sleep(0.004)
 
+        sleep(LAG_DELAY_TIME)  # lag time between stimuli
+
     return data
 
 
@@ -142,10 +149,10 @@ if __name__ == '__main__':
     print("\nConnected")
 
     # Uneccessary since we are disreguarding the shock pads
-    #libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 0, 1)  # 0 = pull up
-    #libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 1, 1)  # 1 = pull down
-    #libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 2, 1)  # 2 = float
-    #libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 3, 1)
+    # libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 0, 1)  # 0 = pull up
+    # libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 1, 1)  # 1 = pull down
+    # libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 2, 1)  # 2 = float
+    # libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 3, 1)
     libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 4, 0)
     libmetawear.mbl_mw_gpio_set_pull_mode(device.board, 5, 0)
 
@@ -168,7 +175,7 @@ if __name__ == '__main__':
     print("GO!!\n")
 
     # starting reaction testing
-    results = run_simon_task(DELAY_TIME, arrowArray, img_files)
+    results = run_simon_task(arrowArray, img_files)
 
     # write results to file
     with open(sys.argv[3], 'w') as reac_file:
