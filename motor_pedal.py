@@ -7,7 +7,8 @@ from time import sleep, time
 from threading import Event
 import sys, random, csv, os
 
-DELAY = 5  # delay time between stimuli
+MAX_DELAY_TIME = 5  # max time allotted to give a response
+LAG_DELAY_TIME = 2 # time between stimuli
 s1 = s2 = True
 k = int(sys.argv[2])
 i = 0
@@ -52,39 +53,26 @@ def clear_outputs():
 # libmetawear.mbl_mw_gpio_clear_digital_output(device.board, 5)
 
 
-def reaction_time(j):
+def reaction_time(j, combination, correct_answer):
+    start = time()  # start the timer
     libmetawear.mbl_mw_gpio_set_digital_output(device.board, j)
-    start = time()
 
     while (s1 and s2):  # wait for input
         libmetawear.mbl_mw_datasignal_read(signal1)
         sleep(0.004)
         libmetawear.mbl_mw_datasignal_read(signal2)
         sleep(0.004)  # bad but polling too quick causes stability issues
+        if time()-start > MAX_DELAY_TIME:
+            data.append([j, combination, correct_answer, False, -1])
+            return
 
-    # Determine the combination
-    
-    if j == 0:
-        combination = "Left Leg/Left Motor"
-    elif j == 1:
-        combination = "Left Leg/Right Motor"
-    elif j == 2:
-        combination = "Right Leg/Left Motor"
-    else:
-        combination = "Right Leg/Right Motor"
-        
-    # Determine what the correct answer was based on the combination
-    if j % 2 == 1:
-        correct_answer = "LEFT"
-    else:
-        correct_answer = "RIGHT"
+    reaction_time = time() - start  # calculate the reaction time
 
     if j % 2:  # determine if input was correct
         correct = not (s2)
     else:
         correct = not (s1)
 
-    reaction_time = time() - start
     libmetawear.mbl_mw_gpio_clear_digital_output(device.board, j)
 
     while (not (s1 and s2)):  # debouncing
@@ -133,10 +121,27 @@ while len(motorArray):
     # sleep(random.randrange(1, 10))  # random delay vibration
     j = random.randrange(0, len(motorArray))  # select random motor
 
-    reaction_time(motorArray[j])
+    # Determine the combination
+    if motorArray[j] == 0:
+        combination = "Left Leg/Left Motor"
+    elif motorArray[j] == 1:
+        combination = "Left Leg/Right Motor"
+    elif motorArray[j] == 2:
+        combination = "Right Leg/Left Motor"
+    else:
+        combination = "Right Leg/Right Motor"
+
+    # Determine what the correct answer was based on the combination
+    if motorArray[j] % 2 == 1:
+        correct_answer = "LEFT"
+    else:
+        correct_answer = "RIGHT"
+
+    # provide stimulus, collect response
+    reaction_time(motorArray[j], correct_answer=correct_answer, combination=combination)
 
     motorArray.pop(j)  # delete this option from the array
-    sleep(DELAY) # give delay time between stimuli
+    sleep(LAG_DELAY_TIME)  # give delay time between stimuli
 
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
