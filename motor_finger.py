@@ -9,6 +9,7 @@ import sys, random, csv, os
 import msvcrt
 
 MAX_DELAY_TIME = 5      # Maximum allowable delay time in seconds
+LAG_DELAY_TIME = 2      # lag delay time
 s1 = s2 = True
 k = int(sys.argv[2])
 i = 0
@@ -35,7 +36,7 @@ def clear_outputs():
 # libmetawear.mbl_mw_gpio_clear_digital_output(device.board, 5)
 
 
-def reaction_time(j):
+def reaction_time(j, combination, correct_answer):
     libmetawear.mbl_mw_gpio_set_digital_output(device.board, j)
     key = ""
     start = time()
@@ -45,27 +46,11 @@ def reaction_time(j):
             key = msvcrt.getch()
             break
 
-    # Determine what the combination was based on j
-    if j == 0:
-        combination = "Left Leg/Left Motor"
-    elif j == 1:
-        combination = "Left Leg/Right Motor"
-    elif j == 2:
-        combination = "Right Leg/Left Motor"
-    else:
-        combination = "Right Leg/Right Motor"
-
-    # Determine the correct answer
-    if j % 2 == 1:
-        correct_answer = "LEFT"
-    else:
-        correct_answer = "RIGHT"
-
     # Determine if the answer was correct, append to data accordingly
     if (time() - start) >= MAX_DELAY_TIME:
         correct = False
         print("Failed to respond in the alloted time.\n")
-        data.append([j, correct, -1])
+        data.append([j, combination, correct_answer, correct, -1])
     else:
         if (key == 'l' and (j % 2 == 1)) or (key == 'a' and (j % 2 == 0)):
             correct = True
@@ -104,11 +89,27 @@ while len(motorArray):
     # global motorArray
     j = random.randrange(0, len(motorArray))  # select random motor
 
-    reaction_time(motorArray[j])
+    # Determine the combination
+    if motorArray[j] == 0:
+        combination = "Left Leg/Left Motor"
+    elif motorArray[j] == 1:
+        combination = "Left Leg/Right Motor"
+    elif motorArray[j] == 2:
+        combination = "Right Leg/Left Motor"
+    else:
+        combination = "Right Leg/Right Motor"
+
+    # Determine what the correct answer was based on the combination
+    if motorArray[j] % 2 == 1:
+        correct_answer = "LEFT"
+    else:
+        correct_answer = "RIGHT"
+
+    reaction_time(motorArray[j], combination, correct_answer)
 
     motorArray.pop(j)  # delete this option from the array
     # sleep based on predetermined "lag" time
-    sleep(DELAY)
+    sleep(LAG_DELAY_TIME)
 
 # write results to file
 with open(sys.argv[3], 'w') as reac_file:
