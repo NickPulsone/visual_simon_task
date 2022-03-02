@@ -1,4 +1,4 @@
-# usage: python motor_pedal.py [mac address] [# of samples] [file_name.csv]
+# usage: python motor_pedal.py [# of samples] [file_name.csv]
 
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
@@ -10,10 +10,12 @@ import sys, random, csv, os
 MAX_DELAY_TIME = 5  # max time allotted to give a response
 LAG_DELAY_TIME = 2 # time between stimuli
 s1 = s2 = True
-k = int(sys.argv[2])
+k = int(sys.argv[1])
 i = 0
 data = []
 motorArray = []
+MTR = "FE:F7:6E:7D:D0:5F"
+
 
 # clunky way of pseudo-random selection of desired outputs
 for y in range(k):
@@ -86,7 +88,7 @@ def reaction_time(j, combination, correct_answer):
 
 
 # set up metatracker
-device = MetaWear(sys.argv[1])
+device = MetaWear(MTR)
 device.connect()
 print("\nConnected")
 
@@ -144,7 +146,7 @@ while len(motorArray):
     sleep(LAG_DELAY_TIME)  # give delay time between stimuli
 
 # write results to file
-with open(sys.argv[3], 'w') as reac_file:
+with open(sys.argv[2], 'w') as reac_file:
     writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(['motor', 'combination', 'correct answer', 'was correct', 'reaction time (s)'])
     for a in data:
