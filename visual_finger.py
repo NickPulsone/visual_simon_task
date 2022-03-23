@@ -1,14 +1,24 @@
-# usage: python visual_simon_task.py
+# usage: python3 visual_simon_task.py [# of stimuli] [filename.csv]
+# Run the program by going to the command line. Type "CD Desktop\Python_Cognitive_Tasks\visual_simon_task" and hit enter.
+# Here you can type the above command where it says "usage" to run the program.
+
+# This test recieves user input from the keyboard:
+#   To respond "Left" if a motor vibration was felt on the left
+#   side of either leg hit the "A" key.
+#   To repond right accordingly, hit the "R" key.
+#   See line 106 to see the code for the program recieving user input
+
 import cv2
 import csv
 import screeninfo
+import sys
 from time import time, sleep
 import random
 
-OUTFILE_NAME = "results.csv"  # Name of output file (can include desired filepath destination)
+OUTFILE_NAME = str(sys.argv[2]) # Name of output file (can include desired filepath destination)
 
 DELAY_TIME = 5  # Maximum time user allowed before it moves on to the next image (seconds)
-TOTAL_STIMULI = 10  # Number of stimuli for the test
+TOTAL_STIMULI = int(sys.argv[1])  # Number of stimuli for the test
 A_KEY = 97  # ASCII "a" is 97
 L_KEY = 108  # ASCII "l" is 108
 
@@ -106,9 +116,9 @@ def run_simon_task(delay, num_images, img_files, outfile_name):
     # Write results to csv file
     with open(outfile_name, 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Index', 'Correct Answer', 'Is Correct', 'Time(s)'])
+        writer.writerow(['Index', 'Index Explanation', 'Correct Answer', 'Is Correct', 'Time(s)'])
         for a in data:
-            writer.writerow([index_explanations[a[0]], a[1], a[2], a[3]])
+            writer.writerow([a[0], index_explanations[a[0]], a[1], a[2], a[3]])
 
 
 if __name__ == '__main__':
