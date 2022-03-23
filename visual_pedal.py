@@ -1,4 +1,9 @@
-# usage: python visual_pedal.py [mac address] [# of samples] [file_name.csv]
+# usage: python3 visual_pedal.py [# of samples] [file_name.csv]
+# Run the program by going to the command line. Type "CD Desktop\Python_Cognitive_Tasks\visual_simon_task" and hit enter.
+# Here you can type the above command where it says "usage" to run the program.
+
+# The program reads the signal from the foot pedals using the Metawear library
+#   See line 112 to see the code reading the foot pedals' status.
 
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
@@ -12,8 +17,9 @@ import sys, random, csv, os
 MAX_DELAY_TIME = 5  # Maximum time in seconds user allowed before it moves on to the next image
 LAG_DELAY_TIME = 2  # Time between stimuli
 s1 = s2 = True  # Signals for the pedal inputs
-k = int(sys.argv[2])  # Number of trials (images) user has to respond to
+k = int(sys.argv[1])  # Number of trials (images) user has to respond to
 i = 0  # Counter
+MTR = "FE:F7:6E:7D:D0:5F" # change if using a different device
 
 # Filepaths of images used for visual simon test
 img_files = ["simon_images\\ll.jpg",
@@ -114,7 +120,7 @@ def run_simon_task(arrow_array, img_files):
 
         # Record that the user took too long if that was the case
         if (time() - now) >= MAX_DELAY_TIME:
-            data.append([arrow_index, correct_answers[-1], False, -1.0])
+            data.append([image_index, index_explanations[image_index], correct_answers[-1], False, -1.0])
             print("False response due to delayed input.\n")
         # Record that the user guessed, determine correctness
         else:
@@ -122,11 +128,11 @@ def run_simon_task(arrow_array, img_files):
                 got_correct_answer = True
             else:
                 got_correct_answer = False
-            data.append([image_index, correct_answers[-1], got_correct_answer, reaction_time])
+            data.append([image_index, index_explanations[image_index], correct_answers[-1], got_correct_answer, reaction_time])
             if image_index < 2:
-                print(str(got_correct_answer) + " guess \"Left\" in " + str(reaction_time) + " seconds.\n")
+                print(str(got_correct_answer) + " guess, correct was \"Left\" in " + str(reaction_time) + " seconds.\n")
             else:
-                print(str(got_correct_answer) + " guess \"Right\" in " + str(reaction_time) + " seconds.\n")
+                print(str(got_correct_answer) + " guess, correct was \"Right\" in " + str(reaction_time) + " seconds.\n")
         cv2.destroyAllWindows()
 
         # Debouncing - wait for inputs to reset. To be debugged.
@@ -144,7 +150,7 @@ def run_simon_task(arrow_array, img_files):
 # ~~~~~ Main Program beigins here ~~~~~
 if __name__ == '__main__':
     # set up metatracker
-    device = MetaWear(sys.argv[1])
+    device = MetaWear(MTR)
     device.connect()
     print("\nConnected")
 
@@ -178,11 +184,11 @@ if __name__ == '__main__':
     results = run_simon_task(arrowArray, img_files)
 
     # write results to file
-    with open(sys.argv[3], 'w') as reac_file:
+    with open(sys.argv[2], 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Index', 'Correct Answer', 'Is Correct', 'Time(s)'])
+        writer.writerow(['Index', 'Index Explanations', 'Correct Answer', 'Is Correct', 'Time(s)'])
         for a in results:
-            writer.writerow([a[0], a[1], a[2], a[3]])
+            writer.writerow([a[0], a[1], a[2], a[3], a[4]])
     # os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
 
     # shut down
