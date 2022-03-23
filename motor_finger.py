@@ -1,4 +1,14 @@
-# usage: python motor_finger.py [mac address] [# of samples] [file_name.csv]
+# usage: python3 motor_finger.py [# of samples] [file_name.csv]
+# Run the program by going to the command line. Type "CD Desktop\Python_Cognitive_Tasks\visual_simon_task" and hit enter.
+# Here you can type the above command where it says "usage" to run the program.
+
+# This test recieves user input from the keyboard:
+#   To respond "Left" if a motor vibration was felt on the left
+#   side of either leg hit the "A" key.
+#   To repond right accordingly, hit the "R" key.
+#   See line 68 to see the code for the program recieving user input
+# The program tells a motor to vibrate using the Metawear library
+#   See line 52 to see the code for sending a vibration to the motor
 
 from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
@@ -11,12 +21,13 @@ import msvcrt
 MAX_DELAY_TIME = 5      # Maximum allowable delay time in seconds
 LAG_DELAY_TIME = 2      # lag delay time
 s1 = s2 = True
-k = int(sys.argv[2])
+k = int(sys.argv[1])
 i = 0
 data = []
 motorArray = []
 A_KEY = 97  # ASCII "a" is 97
 L_KEY = 108  # ASCII "l" is 108
+MTR = "FE:F7:6E:7D:D0:5F" # change if using a different device
 
 # clunky way of pseudo-random selection of desired outputs
 for y in range(k):
@@ -37,6 +48,7 @@ def clear_outputs():
 
 
 def reaction_time(j, combination, correct_answer):
+    # This is the function that sends the vibration signal to the motors
     libmetawear.mbl_mw_gpio_set_digital_output(device.board, j)
     key = ""
     start = time()
@@ -44,15 +56,16 @@ def reaction_time(j, combination, correct_answer):
         reac_time = time() - start
         if msvcrt.kbhit():
             key = msvcrt.getch()
+            end_time = time()
             break
-
+    
     # Determine if the answer was correct, append to data accordingly
-    if (time() - start) >= MAX_DELAY_TIME:
+    if (end_time - start) >= MAX_DELAY_TIME:
         correct = False
         print("Failed to respond in the alloted time.\n")
         data.append([j, combination, correct_answer, correct, -1])
     else:
-        if (key == 'l' and (j % 2 == 1)) or (key == 'a' and (j % 2 == 0)):
+        if (key.decode() == "l" and (j % 2 == 1)) or (key.decode() == "a" and (j % 2 == 0)):
             correct = True
         else:
             correct = False
@@ -63,7 +76,7 @@ def reaction_time(j, combination, correct_answer):
 
 
 # set up metatracker
-device = MetaWear(sys.argv[1])
+device = MetaWear(MTR)
 device.connect()
 print("\nConnected")
 
@@ -112,11 +125,11 @@ while len(motorArray):
     sleep(LAG_DELAY_TIME)
 
 # write results to file
-with open(sys.argv[3], 'w') as reac_file:
+with open(sys.argv[2], 'w') as reac_file:
     writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(['motor', 'combination', 'correct answer', 'was correct', 'reaction time (s)'])
     for a in data:
-        writer.writerow([a[0], a[1], a[2]])
+        writer.writerow([a[0], a[1], a[2], a[3], a[4]])
 #os.system("chmod 666 {}".format(sys.argv[3]))  # metawear python only runs with sudo
 
 # shut down
