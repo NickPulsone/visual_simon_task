@@ -11,8 +11,6 @@ from __future__ import print_function
 from mbientlab.metawear import MetaWear, libmetawear, parse_value
 from mbientlab.metawear.cbindings import *
 from time import sleep, time
-import cv2
-import screeninfo
 from threading import Event
 import sys, random, csv, os
 
@@ -77,7 +75,6 @@ def run_simon_task(arrow_array):
 
     # Main loop of simon testing
     for i in range(len(arrowArray)):
-        print("START" + str(i))
         # Randomly select the image to open
         arrow_index = random.randrange(0, len(arrowArray))
         image_index = arrow_array[arrow_index]
@@ -90,14 +87,12 @@ def run_simon_task(arrow_array):
 
         # Send motor vibration and track the time, allowing
         # the user only the allotted time to make a response
-        sleep(LAG_DELAY_TIME)
         libmetawear.mbl_mw_gpio_set_digital_output(device.board, image_index)
         now = time()
         
         # Read pedal signals until user responds to stimulu
         while (time() - now) < MAX_DELAY_TIME:
-            # Display image and wait for a key to be pressed
-            cv2.waitKey(1)
+            # Wait for pedal to be pressed
             if not s1 or not s2:  # wait for input
                 reaction_time = time() - now
                 break
@@ -112,9 +107,9 @@ def run_simon_task(arrow_array):
             data.append([image_index, index_explanations[image_index], correct_answers[-1], False, -1.0])
             print("False response due to delayed input.\n")
             libmetawear.mbl_mw_gpio_clear_digital_output(device.board, image_index)
-            print("CLEARED" + str(i))
             sleep(LAG_DELAY_TIME)
             continue
+        
         # Record that the user guessed, determine correctness
         else:
             if (not (image_index % 2) and not s1) or ((image_index % 2) and not s2):
@@ -126,27 +121,17 @@ def run_simon_task(arrow_array):
                 print(str(got_correct_answer) + " guess, correct was \"Left\" in " + str(reaction_time) + " seconds.\n")
             else:
                 print(str(got_correct_answer) + " guess, correct was \"Right\" in " + str(reaction_time) + " seconds.\n")
-
-        # Stop the motor from vibrating
-        # clear_outputs()
-        # libmetawear.mbl_mw_gpio_clear_digital_output(device.board, arrow_index)
         
-        # Debouncing - wait for inputs to reset. To be debugged.
-        """
-        end_iter = time()
+        # Debouncing - wait for inputs to reset.
         while not (s1 and s2):
             libmetawear.mbl_mw_datasignal_read(signal1)
             sleep(0.004)
             libmetawear.mbl_mw_datasignal_read(signal2)
             sleep(0.004)
-        """
+        
         # Clear outputs and pause
-        while (time() - now < LAG_DELAY_TIME):
-            sleep(0.004)
-        sleep(1.0)
         libmetawear.mbl_mw_gpio_clear_digital_output(device.board, image_index)
-        print("CLEARED: " + str(i))
-        libmetawear.mbl_mw_gpio_set_pull_mode(device.board, image_index, 1)
+        sleep(LAG_DELAY_TIME)
     return data
 
 
