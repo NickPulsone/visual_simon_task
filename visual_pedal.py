@@ -1,6 +1,7 @@
-# usage: python3 visual_pedal.py [# of samples] [file_name.csv]
+# Instructions: Open the "Command prompt" program from the windows search bar
 # Run the program by going to the command line. Type "CD Desktop\Python_Cognitive_Tasks\visual_simon_task" and hit enter.
-# Here you can type the above command where it says "usage" to run the program.
+# Here you can type the command where it says "usage" to run the program.
+# usage: python3 visual_pedal.py [# of stimuli] [filename.csv]
 
 # The program reads the signal from the foot pedals using the Metawear library
 #   See line 112 to see the code reading the foot pedals' status.
