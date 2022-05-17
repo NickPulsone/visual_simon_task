@@ -1,6 +1,7 @@
-# usage: python3 visual_simon_task.py [# of stimuli] [filename.csv]
+# Instructions: Open the "Command prompt" program from the windows search bar
 # Run the program by going to the command line. Type "CD Desktop\Python_Cognitive_Tasks\visual_simon_task" and hit enter.
-# Here you can type the above command where it says "usage" to run the program.
+# Here you can type the command where it says "usage" to run the program.
+# usage: python3 visual_simon_task.py [# of stimuli] [filename.csv]
 
 # This test recieves user input from the keyboard:
 #   To respond "Left" if a motor vibration was felt on the left
