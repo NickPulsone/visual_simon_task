@@ -1,6 +1,7 @@
-# usage: python3 visual_pedal.py [# of samples] [file_name.csv]
+# Instructions: open the command prompt using the windows search bar
 # Run the program by going to the command line. Type "CD Desktop\Python_Cognitive_Tasks\visual_simon_task" and hit enter.
-# Here you can type the above command where it says "usage" to run the program.
+# Here you can type the command where it says "usage" to run the program.
+# usage: python3 motor_pedal.py [# of samples] [file_name.csv]
 
 # The program tells a motor to vibrate using the Metawear library
 #   See line 94 to see the code for sending a vibration to the motor
